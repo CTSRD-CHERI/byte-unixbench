@@ -87,7 +87,7 @@ else
   ## (-ffast-math) disables strict IEEE or ISO rules/specifications for math funcs
   OPTON = -O3 -ffast-math
 
-  ## OS detection.  Comment out if gmake syntax not supported by other 'make'. 
+  ## OS detection.  Comment out if gmake syntax not supported by other 'make'.
   OSNAME:=$(shell uname -s)
   ARCH := $(shell uname -p)
   ifeq ($(OSNAME),Linux)
@@ -117,7 +117,7 @@ endif
 
 
 ## generic gcc CFLAGS.  -DTIME must be included.
-CFLAGS += -Wall -pedantic $(OPTON) -I $(SRCDIR) -DTIME
+CFLAGS += $(ADDITIONAL_CFLAGS) -Wall -pedantic $(OPTON) -I $(SRCDIR) -DTIME
 
 
 ##############################################################################
