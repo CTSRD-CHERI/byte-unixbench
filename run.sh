@@ -45,6 +45,7 @@ for _bench in ${BENCHMARKS}; do
 	${BENCHDIR}/$prog 1 $arg > /dev/null 2>&1
 
   export STATCOUNTERS_OUTPUT=$stat_file
+  export STATCOUNTERS_PROGNAME="${prog}${arg:+-}${arg}"
   if [ "$TRACE" = "kcov" ]; then
       export STATCOUNTERS_KCOV=yes
   fi
