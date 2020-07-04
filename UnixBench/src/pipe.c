@@ -24,6 +24,7 @@ char SCCSid[] = "@(#) @(#)pipe.c:3.3 -- 5/15/91 19:30:20";
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <errno.h>
 #include "timeit.c"
 
@@ -41,6 +42,9 @@ char	*argv[];
 {
 	char	buf[512];
 	int		pvec[2], duration;
+#ifdef UNIXBENCH_FIXED_ITER
+	time_t	start_time, this_time;
+#endif
 
 	if (argc != 2) {
 		fprintf(stderr,"Usage: %s duration\n", argv[0]);
@@ -51,7 +55,11 @@ char	*argv[];
 
 	pipe(pvec);
 
+#ifdef UNIXBENCH_FIXED_ITER
+	time(&start_time);
+#else
 	wake_me(duration, report);
+#endif
 	iter = 0;
 
 	while (1) {
@@ -64,5 +72,13 @@ char	*argv[];
 				fprintf(stderr,"read failed, error %d\n", errno);
 			}
 		iter++;
+#ifdef UNIXBENCH_FIXED_ITER
+		if (iter == duration) {
+			time(&this_time);
+			fprintf(stderr,"TIME|%ld|1|lps\n",
+				this_time - start_time);
+			exit(0);
+		}
+#endif
 	}
 }

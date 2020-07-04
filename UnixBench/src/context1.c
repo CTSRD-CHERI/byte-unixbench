@@ -26,6 +26,7 @@ char SCCSid[] = "@(#) @(#)context1.c:3.3 -- 5/15/91 19:30:18";
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <errno.h>
 #include "timeit.c"
 
@@ -45,6 +46,9 @@ char	*argv[];
 	unsigned long	check;
 	int	p1[2], p2[2];
 	ssize_t ret;
+#ifdef UNIXBENCH_FIXED_ITER
+	time_t	start_time, this_time;
+#endif
 
 	if (argc != 2) {
 		fprintf(stderr, "Usage: context duration\n");
@@ -55,7 +59,11 @@ char	*argv[];
 
 	/* set up alarm call */
 	iter = 0;
+#ifdef UNIXBENCH_FIXED_ITER
+	time(&start_time);
+#else
 	wake_me(duration, report);
+#endif
 	signal(SIGPIPE, SIG_IGN);
 
 	if (pipe(p1) || pipe(p2)) {
@@ -91,6 +99,13 @@ char	*argv[];
 				exit(2);
 			}
 			iter++;
+#ifdef UNIXBENCH_FIXED_ITER
+			if (iter == duration) {
+				time(&this_time);
+				fprintf(stderr,"TIME|%ld|1|lps\n", this_time - start_time);
+				exit(0);
+			}
+#endif
 		}
 	}
 	else { /* child process */

@@ -38,12 +38,21 @@ void report()
 	exit(0);
 }
 
+#ifdef UNIXBENCH_FIXED_ITER
+#define STOP_CONDITION(iter, duration) (iter < duration)
+#else
+#define STOP_CONDITION(iter, duration) (1)
+#endif
+
 int main(argc, argv)
 int	argc;
 char	*argv[];
 {
-        char   *test;
+	char   *test;
 	int	duration;
+#ifdef UNIXBENCH_FIXED_ITER
+	time_t	start_time, this_time;
+#endif
 
 	if (argc < 2) {
 		fprintf(stderr,"Usage: %s duration [ test ]\n", argv[0]);
@@ -59,32 +68,36 @@ char	*argv[];
 	duration = atoi(argv[1]);
 
 	iter = 0;
+#ifdef UNIXBENCH_FIXED_ITER
+	time(&start_time);
+#else
 	wake_me(duration, report);
+#endif
 
         switch (test[0]) {
         case 'm':
-	   while (1) {
+	   while (STOP_CONDITION(iter, duration)) {
 		close(dup(0));
 		getpid();
 		getuid();
 		umask(022);
 		iter++;
 	   }
-	   /* NOTREACHED */
+	   break;
         case 'c':
-           while (1) {
+	   while (STOP_CONDITION(iter, duration)) {
                 close(dup(0));
                 iter++;
            }
-           /* NOTREACHED */
+	   break;
         case 'g':
-           while (1) {
+	   while (STOP_CONDITION(iter, duration)) {
                 getpid();
                 iter++;
            }
-           /* NOTREACHED */
+	   break;
         case 'e':
-           while (1) {
+	   while (STOP_CONDITION(iter, duration)) {
                 pid_t pid = fork();
                 if (pid < 0) {
                     fprintf(stderr,"%s: fork failed\n", argv[0]);
@@ -101,9 +114,13 @@ char	*argv[];
                 }
                 iter++;
            }
-           /* NOTREACHED */
+	   break;
         }
-
-        exit(9);
+#ifdef UNIXBENCH_FIXED_ITER
+	time(&this_time);
+	fprintf(stderr,"TIME|%ld|1|lps\n", this_time - start_time);
+	exit(0);
+#else
+	exit(9);
+#endif
 }
-

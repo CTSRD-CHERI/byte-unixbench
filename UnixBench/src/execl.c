@@ -62,8 +62,10 @@ char	*argv[];
 		exit(1);
 		}
 
-
 	duration = atoi(argv[1]);
+#ifdef UNIXBENCH_FIXED_ITER
+	iter = duration;
+#endif
 	if (duration > 0)
 		/* the first invocation */
 		{
@@ -83,13 +85,25 @@ char	*argv[];
 		fullpath = argv[0];
 		}
 
-	sprintf(count_str, "%lu", ++iter); /* increment the execl counter */
+	/* increment the execl counter */
+#ifdef UNIXBENCH_FIXED_ITER
+	sprintf(count_str, "%lu", --iter);
+#else
+	sprintf(count_str, "%lu", ++iter);
+#endif
 	sprintf(start_str, "%lu", (unsigned long) start_time);
 	time(&this_time);
+#ifdef UNIXBENCH_FIXED_ITER
+	if (iter == 0) {
+		fprintf(stderr, "TIME|%lu|1|lps\n", this_time - start_time);
+		exit(0);
+	}
+#else
 	if (this_time - start_time >= duration) { /* time has run out */
 		fprintf(stderr, "COUNT|%lu|1|lps\n", iter);
 		exit(0);
 		}
+#endif
 	execl(fullpath, fullpath, "0", dur_str, count_str, start_str, (void *) 0);
 	fprintf(stderr, "Exec failed at iteration %lu\n", iter);
 	perror("Reason");
