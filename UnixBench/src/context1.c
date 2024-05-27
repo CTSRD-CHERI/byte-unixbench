@@ -46,9 +46,7 @@ char	*argv[];
 	unsigned long	check;
 	int	p1[2], p2[2];
 	ssize_t ret;
-#ifdef UNIXBENCH_FIXED_ITER
-	time_t	start_time, this_time;
-#endif
+	char *fixed_workload = getenv("UNIXBENCH_FIXED_WORKLOAD");
 
 	if (argc != 2) {
 		fprintf(stderr, "Usage: context duration\n");
@@ -59,11 +57,9 @@ char	*argv[];
 
 	/* set up alarm call */
 	iter = 0;
-#ifdef UNIXBENCH_FIXED_ITER
-	time(&start_time);
-#else
-	wake_me(duration, report);
-#endif
+	if (fixed_workload == NULL)
+		wake_me(duration, report);
+
 	signal(SIGPIPE, SIG_IGN);
 
 	if (pipe(p1) || pipe(p2)) {
@@ -99,13 +95,9 @@ char	*argv[];
 				exit(2);
 			}
 			iter++;
-#ifdef UNIXBENCH_FIXED_ITER
-			if (iter == duration) {
-				time(&this_time);
-				fprintf(stderr,"TIME|%ld|1|lps\n", this_time - start_time);
+			if (fixed_workload && iter == duration) {
 				exit(0);
-			}
-#endif
+            }
 		}
 	}
 	else { /* child process */

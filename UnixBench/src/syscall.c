@@ -38,21 +38,14 @@ void report()
 	exit(0);
 }
 
-#ifdef UNIXBENCH_FIXED_ITER
-#define STOP_CONDITION(iter, duration) (iter < duration)
-#else
-#define STOP_CONDITION(iter, duration) (1)
-#endif
+#define STOP_CONDITION(iter, duration) (fixed_workload == NULL || iter < duration)
 
 int main(argc, argv)
 int	argc;
 char	*argv[];
 {
-	char   *test;
+	char   *test, *fixed_workload;
 	int	duration;
-#ifdef UNIXBENCH_FIXED_ITER
-	time_t	start_time, this_time;
-#endif
 
 	if (argc < 2) {
 		fprintf(stderr,"Usage: %s duration [ test ]\n", argv[0]);
@@ -60,19 +53,17 @@ char	*argv[];
                 fprintf(stderr,"  \"mix\" (default), \"close\", \"getpid\", \"exec\"\n");
 		exit(1);
 	}
-        if (argc > 2)
-            test = argv[2];
-        else
-            test = "mix";
-
+	if (argc > 2)
+		test = argv[2];
+	else
+		test = "mix";
+	fixed_workload = getenv("UNIXBENCH_FIXED_WORKLOAD");
 	duration = atoi(argv[1]);
 
 	iter = 0;
-#ifdef UNIXBENCH_FIXED_ITER
-	time(&start_time);
-#else
-	wake_me(duration, report);
-#endif
+	if (fixed_workload == NULL) {
+		wake_me(duration, report);
+	}
 
         switch (test[0]) {
         case 'm':
@@ -116,11 +107,5 @@ char	*argv[];
            }
 	   break;
         }
-#ifdef UNIXBENCH_FIXED_ITER
-	time(&this_time);
-	fprintf(stderr,"TIME|%ld|1|lps\n", this_time - start_time);
 	exit(0);
-#else
-	exit(9);
-#endif
 }
