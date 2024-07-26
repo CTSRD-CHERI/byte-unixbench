@@ -41,6 +41,7 @@ char	*argv[];
 {
 	int	slave, duration;
 	int	status;
+	char *fixed_workload = getenv("UNIXBENCH_FIXED_WORKLOAD");
 
 	if (argc != 2) {
 		fprintf(stderr,"Usage: %s duration \n", argv[0]);
@@ -50,7 +51,8 @@ char	*argv[];
 	duration = atoi(argv[1]);
 
 	iter = 0;
-	wake_me(duration, report);
+	if (fixed_workload == NULL)
+		wake_me(duration, report);
 
 	while (1) {
 		if ((slave = fork()) == 0) {
@@ -73,6 +75,9 @@ char	*argv[];
 			exit(2);
 		}
 		iter++;
+		if (fixed_workload && iter == duration) {
+			report();
+        }
 #if debug
 		printf("Child %d done.\n", slave);
 #endif

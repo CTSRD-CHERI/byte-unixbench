@@ -96,7 +96,7 @@ char	*argv[];
 			}
 			iter++;
 			if (fixed_workload && iter == duration) {
-				exit(0);
+				report();
             }
 		}
 	}
@@ -128,6 +128,9 @@ char	*argv[];
 				exit(1);
 			}
 			iter++;
+            if (fixed_workload && iter == duration) {
+              exit(0);
+            }
 		}
 	}
 }
